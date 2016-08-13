@@ -1,4 +1,4 @@
-#[macro_use] 
+#[macro_use]
 extern crate nickel;
 extern crate rustc_serialize;
 extern crate redis;
@@ -9,10 +9,10 @@ use std::io::{self, Write};
 
 #[derive(RustcDecodable, RustcEncodable)]
 
-struct Organisation{
+struct Organisation {
     name: String,
     shortname: String,
-    slug: String
+    slug: String,
 }
 
 impl Organisation {
@@ -20,11 +20,13 @@ impl Organisation {
         let looking_for = slug;
         true
     }
-   
+
     fn find() -> Organisation {
-        let orga = Organisation{name: "foobar".to_string(), 
-                            shortname: "foo".to_string(), 
-                            slug: "foo".to_string() };
+        let orga = Organisation {
+            name: "foobar".to_string(),
+            shortname: "foo".to_string(),
+            slug: "foo".to_string(),
+        };
         orga
     }
 }
@@ -56,23 +58,25 @@ fn main() {
 }
 
 fn find_organisation() -> Organisation {
-    let orga = Organisation{name: "foobar".to_string(), 
-                            shortname: "foo".to_string(), 
-                            slug: "foo".to_string() };
+    let orga = Organisation {
+        name: "foobar".to_string(),
+        shortname: "foo".to_string(),
+        slug: "foo".to_string(),
+    };
     orga
 }
 
-// -> redis::RedisResult<()> 
+// -> redis::RedisResult<()>
 fn set_redis_value_test() {
     let client = redis::Client::open("redis://127.0.0.1/11").unwrap();
     let con = client.get_connection().unwrap();
-    let _ : () = con.set("ef", 43).unwrap();
+    let _: () = con.set("ef", 43).unwrap();
 }
 
 fn get_redis_value_test() -> i32 {
     let client = redis::Client::open("redis://127.0.0.1/11").unwrap();
     let con = client.get_connection().unwrap();
-    let payload : i32 = con.get("ef").unwrap();
+    let payload: i32 = con.get("ef").unwrap();
     println!("payload: {}", payload);
     payload
 }
