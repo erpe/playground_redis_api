@@ -7,3 +7,4 @@ authors = ["rene paulokat <rene@so36.net>"]
 nickel = "*"
 rustc-serialize = "*"
 redis = "0.5.3"
+toml-config = "0.2"    
