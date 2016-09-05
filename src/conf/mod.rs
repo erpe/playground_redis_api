@@ -8,7 +8,7 @@ use self::toml_config::ConfigFactory;
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Config {
     pub redis: RedisConfig,
-    pub server: ServerConfig
+    pub server: ServerConfig,
 }
 
 impl Config {
@@ -25,7 +25,7 @@ impl Default for Config {
     fn default() -> Config {
         Config {
             redis: RedisConfig::default(),
-            server: ServerConfig::default()
+            server: ServerConfig::default(),
         }
     }
 }
@@ -34,7 +34,7 @@ impl Default for Config {
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct RedisConfig {
     ip: String,
-    db: u64
+    db: u64,
 }
 
 impl RedisConfig {
@@ -50,7 +50,7 @@ impl RedisConfig {
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct ServerConfig {
     ip: String,
-    port: u64
+    port: u64,
 }
 
 impl ServerConfig {
@@ -67,18 +67,18 @@ impl Default for RedisConfig {
     fn default() -> RedisConfig {
         RedisConfig {
             ip: "127.0.0.1".to_owned(),
-            db: 1
+            db: 1,
         }
-     }
+    }
 }
 
 impl Default for ServerConfig {
     fn default() -> ServerConfig {
         ServerConfig {
             ip: "127.0.0.1".to_owned(),
-            port: 8080
+            port: 8080,
         }
-     }
+    }
 }
 
 pub fn load() -> Config {

@@ -5,7 +5,7 @@ mod models;
 extern crate nickel;
 extern crate rustc_serialize;
 extern crate redis;
-        
+
 use models::Organisation;
 use nickel::{Nickel, JsonBody, HttpRouter, MediaType};
 use redis::Commands;
@@ -40,6 +40,7 @@ fn main() {
             let orga_id = req.param("orga_id").unwrap();
             let orga = Organisation::find();
             res.set(MediaType::Json);
+            // tell, don't ask!
             if Organisation::is_available(orga_id.to_string()) {
                 format!("{}\n", orga.to_json())
             } else {
@@ -60,7 +61,7 @@ fn find_organisation() -> Organisation {
         slug: "ef".to_string(),
         num_ratings: 42,
         average: 3.97_f32,
-        updated_at: "2016-09-01".to_string()
+        updated_at: "2016-09-01".to_string(),
     };
     orga
 }
@@ -82,7 +83,7 @@ fn get_redis_value_test(url: &str) -> String {
     let res: redis::RedisResult<(String)> = con.get("ef");
     match res {
         Ok(x) => println!("result: {}", x),
-        Err(e) => println!("NO result for: {}", e)
+        Err(e) => println!("NO result for: {}", e),
     }
     payload
 }

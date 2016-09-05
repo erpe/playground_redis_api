@@ -10,7 +10,7 @@ pub struct Organisation {
     pub slug: String,
     pub num_ratings: i32,
     pub average: f32,
-    pub updated_at: String
+    pub updated_at: String,
 }
 
 impl Organisation {
@@ -26,7 +26,7 @@ impl Organisation {
             slug: "foo".to_string(),
             num_ratings: 42,
             average: 3.97_f32,
-            updated_at: "2016-09-01".to_string()
+            updated_at: "2016-09-01".to_string(),
         };
         println!("data: {}", orga.to_json());
         orga
