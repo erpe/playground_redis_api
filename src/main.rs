@@ -5,85 +5,70 @@ mod models;
 extern crate nickel;
 extern crate rustc_serialize;
 extern crate redis;
+extern crate hyper;
 
-use models::Organisation;
+use hyper::{Client};
+use std::io::Read;
+use models::{Summaries, Organisation};
 use nickel::{Nickel, JsonBody, HttpRouter, MediaType};
 use redis::Commands;
 use std::io::{self, Write};
 use rustc_serialize::json::{self, ToJson, Json};
 
+
 fn main() {
     let mut server = Nickel::new();
     let cfg = conf::load();
+    let api_url = cfg.source_url();
+    let api_url_slice: &str = &*api_url;
 
-    let url = cfg.redis_url();
-    let url_slice: &str = &*url;
-
-    set_redis_value_test(url_slice);
-    get_redis_value_test(url_slice);
-
-    let o = Organisation::find();
-    let o_json = o.to_json();
-    println!("o_json: {}", o_json.to_string());
-    let a_json = json::encode(&o).unwrap();
-    println!("a_json: {}", a_json.to_string());
-    let oo: Organisation = json::decode(&*o_json.to_string()).unwrap();
-
-
-    println!("created from json: {}", oo.name);
-
+    warm_redis_cache(api_url_slice, &*conf::load().redis_url());
+    
     server.utilize(router! {
         get "/api" =>  |_req, _res| {
             "your api welcomes you!\n"
         }
         get "/api/v1/rating_stats/:orga_id" => |req, mut res| {
-            let orga_id = req.param("orga_id").unwrap();
-            let orga = Organisation::find();
+            let orga_id: &str = req.param("orga_id").unwrap();
+            let orga = Organisation::find(orga_id, &*conf::load().redis_url());
             res.set(MediaType::Json);
-            // tell, don't ask!
-            if Organisation::is_available(orga_id.to_string()) {
-                format!("{}\n", orga.to_json())
-            } else {
-                format!("no organisation found: {}\n", orga_id)
-            }
+            format!("{}\n", orga.to_json())
         }
     });
 
-    let s_url = cfg.server_url();
-    let s_url_slice: &str = &*s_url;
-    server.listen(s_url_slice);
+    server.listen(&*cfg.server_url());
 }
 
-fn find_organisation() -> Organisation {
-    let orga = Organisation {
-        name: "EF".to_string(),
-        shortname: "EF".to_string(),
-        slug: "ef".to_string(),
-        num_ratings: 42,
-        average: 3.97_f32,
-        updated_at: "2016-09-01".to_string(),
-    };
-    orga
+fn warm_redis_cache(api_url: &str, redis_url: &str)  {
+    let client = Client::new();
+    let mut res = client.get(api_url).send().unwrap();
+    let mut buf = String::new();
+    let b = res.read_to_string(&mut buf).unwrap();
+    let organisations: Vec<Organisation> = json::decode(&*buf).unwrap();
+    for orga in organisations {
+        push_to_redis(redis_url, orga);
+    }
 }
 
-// -> redis::RedisResult<()>
+fn push_to_redis(url: &str, orga: Organisation) {
+    let client = redis::Client::open(url).unwrap();
+    let con = client.get_connection().unwrap();
+    let orga_json = json::encode(&orga).unwrap();
+    let _: () = con.set(orga.slug, orga_json).unwrap();
+    println!("pushing {} to redis...", orga.organisation_name);
+}
+
 fn set_redis_value_test(url: &str) {
     let client = redis::Client::open(url).unwrap();
     let con = client.get_connection().unwrap();
-    let orga = find_organisation();
+    let orga = Organisation::dummy();
     let orga_json = json::encode(&orga).unwrap();
-    let _: () = con.set("ef", orga_json).unwrap();
+    let _: () = con.set(orga.slug, orga_json).unwrap();
 }
 
 fn get_redis_value_test(url: &str) -> String {
     let client = redis::Client::open(url).unwrap();
     let con = client.get_connection().unwrap();
-    let payload: String = con.get("ef").unwrap();
-    println!("payload: {}", payload);
-    let res: redis::RedisResult<(String)> = con.get("ef");
-    match res {
-        Ok(x) => println!("result: {}", x),
-        Err(e) => println!("NO result for: {}", e),
-    }
+    let payload: String = con.get("foo").unwrap();
     payload
 }

@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["rene paulokat <rene@so36.net>"]
 
 [dependencies]
+hyper = "0.9.10"
 nickel = "*"
 rustc-serialize = "*"
 redis = "0.5.3"
