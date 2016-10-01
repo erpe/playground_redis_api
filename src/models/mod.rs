@@ -1,4 +1,4 @@
-//mod conf;
+// mod conf;
 
 extern crate rustc_serialize;
 extern crate redis;
@@ -10,7 +10,7 @@ use redis::Commands;
 
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Summaries {
-    pub organisations: Vec<Organisation>
+    pub organisations: Vec<Organisation>,
 }
 
 #[derive(RustcDecodable, RustcEncodable)]
@@ -24,14 +24,14 @@ pub struct Organisation {
     pub confirmed_average: f32,
     pub url: String,
     pub slug: String,
-    pub updated_at: String
+    pub updated_at: String,
 }
 
 impl Organisation {
-
     pub fn find(id: &str, redis_url: &str) -> Organisation {
         let client = redis::Client::open(redis_url).unwrap();
         let con = client.get_connection().unwrap();
+
         let payload: String = con.get(id).unwrap();
         println!("payload: {}", payload);
         let orga: Organisation = json::decode(&*payload).unwrap();
@@ -49,7 +49,7 @@ impl Organisation {
             confirmed_average: 3.97_f32,
             slug: "foo".to_string(),
             url: "http://localhost:3000/orgs/foo/ratings".to_string(),
-            updated_at: "2016-09-01".to_string()
+            updated_at: "2016-09-01".to_string(),
         };
         orga
     }
@@ -58,13 +58,17 @@ impl Organisation {
 impl ToJson for Organisation {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::new();
-        d.insert("organisation_name".to_string(), self.organisation_name.to_json());
-        d.insert("organisation_shortname".to_string(), self.organisation_shortname.to_json());
+        d.insert("organisation_name".to_string(),
+                 self.organisation_name.to_json());
+        d.insert("organisation_shortname".to_string(),
+                 self.organisation_shortname.to_json());
         d.insert("num_ratings".to_string(), self.num_ratings.to_json());
-        d.insert("num_recommendations".to_string(), self.num_recommendations.to_json());
+        d.insert("num_recommendations".to_string(),
+                 self.num_recommendations.to_json());
         d.insert("num_confirmed".to_string(), self.num_confirmed.to_json());
         d.insert("average".to_string(), self.average.to_json());
-        d.insert("confirmed_average".to_string(), self.confirmed_average.to_json());
+        d.insert("confirmed_average".to_string(),
+                 self.confirmed_average.to_json());
         d.insert("slug".to_string(), self.slug.to_json());
         d.insert("url".to_string(), self.url.to_json());
         d.insert("updated_at".to_string(), self.updated_at.to_json());

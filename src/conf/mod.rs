@@ -9,7 +9,7 @@ use self::toml_config::ConfigFactory;
 pub struct Config {
     pub redis: RedisConfig,
     pub server: ServerConfig,
-    pub source: SourceConfig
+    pub source: SourceConfig,
 }
 
 impl Config {
@@ -24,6 +24,14 @@ impl Config {
     pub fn source_url(&self) -> String {
         self.source.url()
     }
+
+    pub fn source_user(&self) -> String {
+        self.source.api_user()
+    }
+
+    pub fn source_password(&self) -> String {
+        self.source.api_password()
+    }
 }
 
 impl Default for Config {
@@ -31,7 +39,7 @@ impl Default for Config {
         Config {
             redis: RedisConfig::default(),
             server: ServerConfig::default(),
-            source: SourceConfig::default()
+            source: SourceConfig::default(),
         }
     }
 }
@@ -72,14 +80,21 @@ impl ServerConfig {
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct SourceConfig {
     api_url: String,
-    username: String,
-    password: String
+    api_user: String,
+    api_password: String,
 }
 
 impl SourceConfig {
     fn url(&self) -> String {
-        let my_url = self.api_url.to_string();
-        my_url
+        self.api_url.to_string()
+    }
+
+    fn api_user(&self) -> String {
+        self.api_user.to_string()
+    }
+
+    fn api_password(&self) -> String {
+        self.api_password.to_string()
     }
 }
 
@@ -106,8 +121,8 @@ impl Default for SourceConfig {
     fn default() -> SourceConfig {
         SourceConfig {
             api_url: "localhost:3000/api/v1/rating_summaries.json".to_owned(),
-            username: "kompass".to_owned(),
-            password: "secret".to_owned()
+            api_user: "kompass".to_owned(),
+            api_password: "secret".to_owned(),
         }
     }
 }

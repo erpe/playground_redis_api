@@ -14,15 +14,15 @@ use nickel::{Nickel, JsonBody, HttpRouter, MediaType};
 use redis::Commands;
 use std::io::{self, Write};
 use rustc_serialize::json::{self, ToJson, Json};
-
+use hyper::header::{Headers, Authorization, Basic};
+use conf::{Config};
 
 fn main() {
     let mut server = Nickel::new();
     let cfg = conf::load();
-    let api_url = cfg.source_url();
-    let api_url_slice: &str = &*api_url;
+    let server_url = &*cfg.server_url();
 
-    warm_redis_cache(api_url_slice, &*conf::load().redis_url());
+    warm_redis_cache(cfg);
     
     server.utilize(router! {
         get "/api" =>  |_req, _res| {
@@ -36,13 +36,25 @@ fn main() {
         }
     });
 
-    server.listen(&*cfg.server_url());
+    server.listen(server_url);
 }
 
-fn warm_redis_cache(api_url: &str, redis_url: &str)  {
+fn warm_redis_cache(cfg: Config)  {
     let client = Client::new();
-    let mut res = client.get(api_url).send().unwrap();
+    let mut headers = Headers::new();
+    headers.set(
+        Authorization(
+            Basic {
+                username: cfg.source_user(),
+                password: Some(cfg.source_password())
+            }
+            )
+        );
+
+    let mut res = client.get(&*cfg.source_url()).headers(headers).send().unwrap();
+
     let mut buf = String::new();
+    let redis_url = &*cfg.redis_url();
     let b = res.read_to_string(&mut buf).unwrap();
     let organisations: Vec<Organisation> = json::decode(&*buf).unwrap();
     for orga in organisations {
