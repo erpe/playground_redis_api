@@ -1,5 +1,3 @@
-// mod conf;
-
 extern crate rustc_serialize;
 extern crate redis;
 
@@ -28,16 +26,20 @@ pub struct Organisation {
 }
 
 impl Organisation {
-    pub fn find(id: &str, redis_url: &str) -> Organisation {
+    pub fn find(id: &str, redis_url: &str) -> Option<Organisation> {
         let client = redis::Client::open(redis_url).unwrap();
         let con = client.get_connection().unwrap();
+        let exists: bool = con.exists(id).unwrap();
 
-        let payload: String = con.get(id).unwrap();
-        println!("payload: {}", payload);
-        let orga: Organisation = json::decode(&*payload).unwrap();
-        orga
+        if exists == true {
+            let payload: String = con.get(id).unwrap();
+            let orga: Organisation = json::decode(&*payload).unwrap();
+            return Some(orga);
+        }
+        None
     }
 
+    #[allow(dead_code)]
     pub fn dummy() -> Organisation {
         let orga = Organisation {
             organisation_name: "foobar".to_string(),

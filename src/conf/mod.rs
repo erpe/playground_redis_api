@@ -1,7 +1,6 @@
 extern crate rustc_serialize;
 extern crate toml_config;
 
-use rustc_serialize::{Encodable, Decodable};
 use std::path::Path;
 use self::toml_config::ConfigFactory;
 
